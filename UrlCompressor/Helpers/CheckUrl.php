@@ -1,24 +1,20 @@
 <?php
 
-namespace Study\UrlCompressor\Actions;
+namespace Study\UrlCompressor\Helpers;
 
 class CheckUrl
 {
-    const TIMEOUT = 6;
-    private static string $userAgent;
-    private static array $statusCodes;
+    private int $timeout;
+    private array $statusCodes;
+    private string $userAgent;
     public string $checkedUrl;
     public bool $urlType;
 
-    public function __construct()
+    public function __construct(int $timeout, array $statusCodes, string $userAgent)
     {
-        self::$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (HTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36';
-        self::$statusCodes = [
-            200 => true,
-            301 => true,
-            302 => true,
-            404 => true
-        ];
+        $this->timeout = $timeout;
+        $this->statusCodes = $statusCodes;
+        $this->userAgent = $userAgent;
         $this->urlType = false;
         $this->checkedUrl = $this->CheckInput();
         $responseCode = $this->GetRequest();
@@ -39,9 +35,9 @@ class CheckUrl
         curl_setopt($ch, CURLOPT_URL, $this->checkedUrl);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, self::$userAgent);
+        curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
         curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_TIMEOUT, self::TIMEOUT);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeout);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
         curl_exec($ch);
@@ -52,7 +48,7 @@ class CheckUrl
 
     private function ValidateResponse(int $code): void
     {
-        if (isset(self::$statusCodes[$code]))
+        if (isset($this->statusCodes[$code]))
             $this->urlType = true;
     }
 }
